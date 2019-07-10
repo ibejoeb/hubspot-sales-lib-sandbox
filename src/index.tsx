@@ -9,14 +9,17 @@ import {
   ConnectedCurrentRefinements
 } from "./search";
 import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
 
 function App() {
   return (
     <InstantSearch indexName="sales_library" searchClient={searchClient}>
-      <Grid container direction="row">
+      <Grid container direction="row" spacing={2}>
         <Grid item xs={3}>
-          <ConnectedCurrentRefinements />
-          <CustomRefinementList attribute="industry" />
+          <Paper>
+            <ConnectedCurrentRefinements />
+            <CustomRefinementList attribute="industry" />
+          </Paper>
         </Grid>
         <Grid item md>
           <CustomSearchBox />
