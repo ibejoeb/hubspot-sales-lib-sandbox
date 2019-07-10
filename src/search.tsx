@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  InstantSearch,
   Highlight,
   connectHits,
   connectSearchBox,
@@ -22,17 +23,15 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import Checkbox from "@material-ui/core/Checkbox";
-
-const searchClient = algoliasearch(
-  "8PKU4Z4I2H",
-  "136ff869dfadbd2a7700076656c4648a"
-);
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
 
 interface HitProps {
   hit: any;
 }
 
-const Hit: React.FC<HitProps> = ({ hit }) => (
+const MuiHit: React.FC<HitProps> = ({ hit }) => (
   <Card>
     <CardHeader
       avatar={<Avatar>H</Avatar>}
@@ -56,24 +55,24 @@ interface HitsProps {
   hits: any[];
 }
 
-const MyHits: React.FC<HitsProps> = ({ hits }) => (
+const MuiHitsBase: React.FC<HitsProps> = ({ hits }) => (
   <Grid container direction="column" spacing={2}>
     {hits.map(hit => (
       <Grid item key={hit.objectID}>
-        <Hit hit={hit} />
+        <MuiHit hit={hit} />
       </Grid>
     ))}
   </Grid>
 );
 
-const CustomHits = connectHits(MyHits);
+const MuiHits = connectHits(MuiHitsBase);
 
-interface SearchBoxProps {
+interface MuiSearchBoxProps {
   currentRefinement: string;
   refine(term: string): void;
 }
 
-const MaterialUiSearchBox: React.FC<SearchBoxProps> = ({
+const MuiSearchBoxBase: React.FC<MuiSearchBoxProps> = ({
   currentRefinement,
   refine
 }) => (
@@ -88,7 +87,7 @@ const MaterialUiSearchBox: React.FC<SearchBoxProps> = ({
   </form>
 );
 
-const CustomSearchBox = connectSearchBox(MaterialUiSearchBox);
+const MuiSearchBox = connectSearchBox(MuiSearchBoxBase);
 
 const CheckboxItem = ({ item, refine, ...others }) => (
   <ListItem>
@@ -108,15 +107,15 @@ const CheckboxItem = ({ item, refine, ...others }) => (
   </ListItem>
 );
 
-const MaterialUiCheckBoxRefinementList = ({
+const MuiCheckboxRefinementListBase = ({
   items,
   attribute,
   refine,
   createURL
 }) => (
   <List>
-    <ListSubheader style={{ fontSize: 18 }}>
-      {attribute.toUpperCase()}
+    <ListSubheader>
+      <Typography variant="subtitle1">{attribute.toUpperCase()}</Typography>
     </ListSubheader>
     {items.map(item => (
       <CheckboxItem
@@ -129,22 +128,58 @@ const MaterialUiCheckBoxRefinementList = ({
   </List>
 );
 
-const CustomRefinementList = connectRefinementList(
-  MaterialUiCheckBoxRefinementList
+const MuiCheckboxRefinementList = connectRefinementList(
+  MuiCheckboxRefinementListBase
 );
 
-const MaterialUiClearAllFilters = ({ items, refine }) => (
+const MuiClearAllFiltersBase = ({ items, refine }) => (
   <Button size="small" variant="text" onClick={() => refine(items)} />
 );
 
-const ConnectedCurrentRefinements = connectCurrentRefinements(
-  MaterialUiClearAllFilters
+const MuiClearAllFilters = connectCurrentRefinements(MuiClearAllFiltersBase);
+
+interface SearchDialogProps {
+  title: string;
+  indexName: string;
+  searchClient: algoliasearch.Client;
+  open: boolean;
+}
+
+const MuiSearchDialog: React.FC<SearchDialogProps> = ({
+  title,
+  indexName,
+  searchClient,
+  open
+}) => (
+  <InstantSearch indexName={indexName} searchClient={searchClient}>
+    <Dialog
+      open={open}
+      aria-labelledby="scroll-dialog-title"
+      scroll="paper"
+      fullWidth={true}
+      maxWidth="lg">
+      <DialogTitle id="scroll-dialog-title">
+        {title}
+        <MuiSearchBox />
+      </DialogTitle>
+      <DialogContent dividers={false}>
+        <Grid container direction="row">
+          <Grid item sm={2}>
+            <MuiCheckboxRefinementList attribute="industry" />
+          </Grid>
+          <Grid item md>
+            <MuiHits />
+          </Grid>
+        </Grid>
+      </DialogContent>
+    </Dialog>
+  </InstantSearch>
 );
 
 export {
-  CustomHits,
-  CustomSearchBox,
-  CustomRefinementList,
-  ConnectedCurrentRefinements,
-  searchClient
+  MuiHits,
+  MuiSearchBox,
+  MuiCheckboxRefinementList,
+  MuiClearAllFilters,
+  MuiSearchDialog
 };

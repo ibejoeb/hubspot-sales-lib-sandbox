@@ -1,34 +1,23 @@
 import * as React from "react";
 import { render } from "react-dom";
-import { InstantSearch } from "react-instantsearch-dom";
-import {
-  searchClient,
-  CustomHits,
-  CustomSearchBox,
-  CustomRefinementList,
-  ConnectedCurrentRefinements
-} from "./search";
-import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
+import { MuiSearchDialog } from "./search";
+import algoliasearch from "algoliasearch/lite";
 
-function App() {
+const searchClient = algoliasearch(
+  "8PKU4Z4I2H",
+  "136ff869dfadbd2a7700076656c4648a"
+);
+
+const App: React.FC = () => {
   return (
-    <InstantSearch indexName="sales_library" searchClient={searchClient}>
-      <Grid container direction="row" spacing={2}>
-        <Grid item xs={3}>
-          <Paper>
-            <ConnectedCurrentRefinements />
-            <CustomRefinementList attribute="industry" />
-          </Paper>
-        </Grid>
-        <Grid item md>
-          <CustomSearchBox />
-          <CustomHits />
-        </Grid>
-      </Grid>
-    </InstantSearch>
+    <MuiSearchDialog
+      indexName="sales_library"
+      searchClient={searchClient}
+      title="Hello"
+      open={true}
+    />
   );
-}
+};
 
 const rootElement = document.getElementById("root");
 render(<App />, rootElement);
