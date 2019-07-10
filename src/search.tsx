@@ -17,11 +17,7 @@ import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import Avatar from "@material-ui/core/Avatar";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import ListSubheader from "@material-ui/core/ListSubheader";
 import Checkbox from "@material-ui/core/Checkbox";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -30,10 +26,8 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
-import Input from "@material-ui/core/Input";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
-import Paper from "@material-ui/core/Paper";
 
 interface HitProps {
   hit: any;
@@ -52,8 +46,13 @@ const MuiHit: React.FC<HitProps> = ({ hit }) => (
       </Typography>
     </CardContent>
     <CardActions>
-      <Button size="small" color="primary">
-        Insert
+      <Button
+        size="small"
+        color="primary"
+        href={hit.url}
+        target="_blank"
+        rel="noreferrer">
+        View
       </Button>
     </CardActions>
   </Card>
@@ -97,7 +96,7 @@ const MuiSearchBoxBase: React.FC<MuiSearchBoxProps> = ({
 
 const MuiSearchBox = connectSearchBox(MuiSearchBoxBase);
 
-const CheckboxItem = ({ item, refine, ...others }) => (
+const CheckboxItem = ({ item, refine }) => (
   <MenuItem key={item.label} value={item}>
     <Checkbox
       disableRipple
@@ -105,12 +104,18 @@ const CheckboxItem = ({ item, refine, ...others }) => (
       checked={item.isRefined}
       tabIndex={-1}
       inputProps={{ "aria-labelledby": `refine-${item.label}` }}
-      onChange={(e, checked) => {
+      onChange={e => {
         e.preventDefault();
         refine(item.value);
       }}
     />
-    <ListItemText id={`refine-${item.label}`} primary={item.label} />
+    <ListItemText
+      id={`refine-${item.label}`}
+      primary={item.label.toLowerCase()}
+    />
+    <ListItemSecondaryAction>
+      <Typography variant="caption">{item.count}</Typography>
+    </ListItemSecondaryAction>
   </MenuItem>
 );
 
@@ -139,8 +144,7 @@ const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
   items,
   attribute,
   refine,
-  currentRefinement,
-  ...others
+  currentRefinement
 }) => {
   const classes = useStyles();
 
