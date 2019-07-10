@@ -26,6 +26,14 @@ import Checkbox from "@material-ui/core/Checkbox";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
+import Input from "@material-ui/core/Input";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import Box from "@material-ui/core/Box";
+import Paper from "@material-ui/core/Paper";
 
 interface HitProps {
   hit: any;
@@ -90,43 +98,70 @@ const MuiSearchBoxBase: React.FC<MuiSearchBoxProps> = ({
 const MuiSearchBox = connectSearchBox(MuiSearchBoxBase);
 
 const CheckboxItem = ({ item, refine, ...others }) => (
-  <ListItem>
-    <ListItemIcon>
-      <Checkbox
-        edge="start"
-        checked={item.isRefined}
-        tabIndex={-1}
-        disableRipple
-        onChange={(e, checked) => {
-          e.preventDefault();
-          refine(item.value);
-        }}
-      />
-    </ListItemIcon>
-    <ListItemText primary={item.label} />
-  </ListItem>
+  <MenuItem key={item.label} value={item}>
+    <Checkbox
+      disableRipple
+      edge="start"
+      checked={item.isRefined}
+      tabIndex={-1}
+      inputProps={{ "aria-labelledby": `refine-${item.label}` }}
+      onChange={(e, checked) => {
+        e.preventDefault();
+        refine(item.value);
+      }}
+    />
+    <ListItemText id={`refine-${item.label}`} primary={item.label} />
+  </MenuItem>
 );
 
-const MuiCheckboxRefinementListBase = ({
+interface MuiRefinementListProps {
+  items: any[];
+  currentRefinement: string[];
+  attribute: string;
+  isFromSearch: boolean;
+  refine(term: string): void;
+}
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: "flex",
+      flexWrap: "wrap"
+    },
+    formControl: {
+      margin: theme.spacing(1),
+      width: "100%"
+    }
+  })
+);
+
+const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
   items,
   attribute,
   refine,
-  createURL
-}) => (
-  <List>
-    <ListSubheader>
-      <Typography variant="subtitle1">{attribute.toUpperCase()}</Typography>
-    </ListSubheader>
-    {items.map(item => (
-      <CheckboxItem
-        key={item.label}
-        item={item}
-        refine={refine}
-        createURL={createURL}
-      />
-    ))}
-  </List>
-);
+  currentRefinement,
+  ...others
+}) => {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <FormControl className={classes.formControl}>
+        <InputLabel htmlFor="select-multiple">
+          {attribute.toLowerCase()}
+        </InputLabel>
+        <Select
+          multiple
+          value={currentRefinement}
+          renderValue={selected => (selected as string[]).join(", ")}>
+          {items.map(item => (
+            <CheckboxItem key={item.label} item={item} refine={refine} />
+          ))}
+        </Select>
+      </FormControl>
+    </div>
+  );
+};
 
 const MuiCheckboxRefinementList = connectRefinementList(
   MuiCheckboxRefinementListBase
@@ -163,8 +198,8 @@ const MuiSearchDialog: React.FC<SearchDialogProps> = ({
         <MuiSearchBox />
       </DialogTitle>
       <DialogContent dividers={false}>
-        <Grid container direction="row">
-          <Grid item sm={2}>
+        <Grid container direction="row" spacing={1}>
+          <Grid item sm={3}>
             <MuiCheckboxRefinementList attribute="industry" />
           </Grid>
           <Grid item md>
