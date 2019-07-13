@@ -13,7 +13,7 @@ const App: React.FC = () => {
     <MuiSearchDialog
       indexName="sales_library"
       searchClient={searchClient}
-      title="Hello"
+      title="HubSpot Sales Library"
       open={true}
     />
   );

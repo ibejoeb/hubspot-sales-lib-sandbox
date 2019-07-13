@@ -28,7 +28,6 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import CardMedia from "@material-ui/core/CardMedia";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -78,7 +77,6 @@ const MuiHit: React.FC<HitProps> = ({ hit }) => {
           <Highlight attribute="content" hit={hit} />
         </Typography>
       </CardContent>
-      <CardMedia className={classes.cover} image={hit.image_url} />
       <CardActions>
         <Button
           size="small"
