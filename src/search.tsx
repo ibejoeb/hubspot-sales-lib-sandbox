@@ -29,34 +29,67 @@ import Select from "@material-ui/core/Select";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: "flex",
+      flexWrap: "wrap"
+    },
+    formControl: {
+      margin: theme.spacing(1),
+      width: "100%"
+    },
+    avatar: {
+      backgroundColor: "#F5F8FA",
+      margin: 10
+    },
+    bigAvatar: {
+      backgroundColor: "#F5F8FA",
+      margin: 10,
+      width: 60,
+      height: 60
+    }
+  })
+);
+
 interface HitProps {
   hit: any;
 }
 
-const MuiHit: React.FC<HitProps> = ({ hit }) => (
-  <Card>
-    <CardHeader
-      avatar={<Avatar>H</Avatar>}
-      title={<Highlight attribute="highlight_stat" hit={hit} />}
-      subheader={`${hit.company}, ${hit.industry_detail}`}
-    />
-    <CardContent>
-      <Typography variant="body2" color="textSecondary" component="p">
-        <Highlight attribute="tools" hit={hit} />
-      </Typography>
-    </CardContent>
-    <CardActions>
-      <Button
-        size="small"
-        color="primary"
-        href={hit.url}
-        target="_blank"
-        rel="noreferrer">
-        View
-      </Button>
-    </CardActions>
-  </Card>
-);
+const MuiHit: React.FC<HitProps> = ({ hit }) => {
+  const classes = useStyles();
+
+  return (
+    <Card>
+      <CardHeader
+        avatar={
+          <Avatar
+            alt="HubSpot"
+            src={hit.image_url}
+            className={classes.bigAvatar}
+          />
+        }
+        title={<Highlight attribute="headline" hit={hit} />}
+        subheader={`${hit.company}, ${hit.industry_detail}`}
+      />
+      <CardContent>
+        <Typography variant="body2" color="textSecondary" component="p">
+          <Highlight attribute="content" hit={hit} />
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button
+          size="small"
+          color="primary"
+          href={hit.url}
+          target="_blank"
+          rel="noreferrer">
+          View
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};
 
 interface HitsProps {
   hits: any[];
@@ -127,19 +160,6 @@ interface MuiRefinementListProps {
   refine(term: string): void;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      display: "flex",
-      flexWrap: "wrap"
-    },
-    formControl: {
-      margin: theme.spacing(1),
-      width: "100%"
-    }
-  })
-);
-
 const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
   items,
   attribute,
@@ -205,6 +225,9 @@ const MuiSearchDialog: React.FC<SearchDialogProps> = ({
         <Grid container direction="row" spacing={1}>
           <Grid item sm={3}>
             <MuiCheckboxRefinementList attribute="industry" />
+            <MuiCheckboxRefinementList attribute="segment" />
+            <MuiCheckboxRefinementList attribute="country" />
+            <MuiCheckboxRefinementList attribute="region" />
           </Grid>
           <Grid item md>
             <MuiHits />
