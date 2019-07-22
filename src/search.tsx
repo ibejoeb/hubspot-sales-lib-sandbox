@@ -4,8 +4,7 @@ import {
   Highlight,
   connectHits,
   connectSearchBox,
-  connectRefinementList,
-  connectCurrentRefinements
+  connectRefinementList
 } from "react-instantsearch-dom";
 import algoliasearch from "algoliasearch/lite";
 import Button from "@material-ui/core/Button";
@@ -16,7 +15,6 @@ import CardContent from "@material-ui/core/CardContent";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
-import Avatar from "@material-ui/core/Avatar";
 import ListItemText from "@material-ui/core/ListItemText";
 import Checkbox from "@material-ui/core/Checkbox";
 import Dialog from "@material-ui/core/Dialog";
@@ -28,6 +26,12 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import { RefinementListProvided, Hit } from "react-instantsearch-core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+
+import IconButton from "@material-ui/core/IconButton";
+import clsx from "clsx";
+import Collapse from "@material-ui/core/Collapse";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,15 +43,15 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: theme.spacing(1),
       width: "100%"
     },
-    avatar: {
-      backgroundColor: "#F5F8FA",
-      margin: 10
+    expand: {
+      transform: "rotate(0deg)",
+      marginLeft: "auto",
+      transition: theme.transitions.create("transform", {
+        duration: theme.transitions.duration.shortest
+      })
     },
-    bigAvatar: {
-      backgroundColor: "#F5F8FA",
-      margin: 10,
-      width: 60,
-      height: 60
+    expandOpen: {
+      transform: "rotate(180deg)"
     }
   })
 );
@@ -58,22 +62,20 @@ interface HitProps {
 
 const MuiHit: React.FC<HitProps> = ({ hit }) => {
   const classes = useStyles();
+  const [expanded, setExpanded] = React.useState(false);
+
+  function handleExpandClick() {
+    setExpanded(!expanded);
+  }
 
   return (
     <Card>
-      <CardHeader
-        avatar={
-          <Avatar
-            alt="HubSpot"
-            src={hit.image_url}
-            className={classes.bigAvatar}
-          />
-        }
-        title={<Highlight attribute="headline" hit={hit} />}
-        subheader={`${hit.company}, ${hit.industry_detail}`}
-      />
+      <CardHeader title={<Highlight attribute="headline" hit={hit} />} />
       <CardContent>
-        <Typography variant="body2" color="textSecondary" component="p">
+        <Typography paragraph color="textSecondary">
+          <Highlight attribute="description" hit={hit} />
+        </Typography>
+        <Typography paragraph color="textSecondary">
           <Highlight attribute="content" hit={hit} />
         </Typography>
       </CardContent>
@@ -86,7 +88,26 @@ const MuiHit: React.FC<HitProps> = ({ hit }) => {
           rel="noreferrer">
           View
         </Button>
+        <IconButton
+          className={clsx(classes.expand, {
+            [classes.expandOpen]: expanded
+          })}
+          onClick={handleExpandClick}
+          aria-expanded={expanded}
+          aria-label="Show more">
+          <ExpandMoreIcon />
+        </IconButton>
       </CardActions>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <CardContent>
+          <Typography paragraph>
+            <dl>
+              <dt>Company</dt>
+              <dd>{hit.company}</dd>
+            </dl>
+          </Typography>
+        </CardContent>
+      </Collapse>
     </Card>
   );
 };
@@ -129,8 +150,18 @@ const MuiSearchBoxBase: React.FC<MuiSearchBoxProps> = ({
 
 const MuiSearchBox = connectSearchBox(MuiSearchBoxBase);
 
-const CheckboxItem = ({ item, refine }) => (
-  <MenuItem key={item.label} value={item}>
+interface CheckboxItemProps {
+  item: Hit<{
+    count: number;
+    isRefined: boolean;
+    label: string;
+    value: string[];
+  }>;
+  refine: (value: string[]) => any;
+}
+
+const CheckboxItem: React.FC<CheckboxItemProps> = ({ item, refine }) => (
+  <MenuItem key={item.label} value={item.value}>
     <Checkbox
       disableRipple
       edge="start"
@@ -152,12 +183,8 @@ const CheckboxItem = ({ item, refine }) => (
   </MenuItem>
 );
 
-interface MuiRefinementListProps {
-  items: any[];
-  currentRefinement: string[];
+interface MuiRefinementListProps extends RefinementListProvided {
   attribute: string;
-  isFromSearch: boolean;
-  refine(term: string): void;
 }
 
 const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
@@ -166,7 +193,7 @@ const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
   refine,
   currentRefinement
 }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
@@ -178,9 +205,11 @@ const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
           multiple
           value={currentRefinement}
           renderValue={selected => (selected as string[]).join(", ")}>
-          {items.map(item => (
-            <CheckboxItem key={item.label} item={item} refine={refine} />
-          ))}
+          {items
+            .sort((a, b) => a.label.localeCompare(b.label))
+            .map(item => (
+              <CheckboxItem key={item.label} item={item} refine={refine} />
+            ))}
         </Select>
       </FormControl>
     </div>
@@ -190,12 +219,6 @@ const MuiCheckboxRefinementListBase: React.FC<MuiRefinementListProps> = ({
 const MuiCheckboxRefinementList = connectRefinementList(
   MuiCheckboxRefinementListBase
 );
-
-const MuiClearAllFiltersBase = ({ items, refine }) => (
-  <Button size="small" variant="text" onClick={() => refine(items)} />
-);
-
-const MuiClearAllFilters = connectCurrentRefinements(MuiClearAllFiltersBase);
 
 interface SearchDialogProps {
   title: string;
@@ -238,10 +261,4 @@ const MuiSearchDialog: React.FC<SearchDialogProps> = ({
   </InstantSearch>
 );
 
-export {
-  MuiHits,
-  MuiSearchBox,
-  MuiCheckboxRefinementList,
-  MuiClearAllFilters,
-  MuiSearchDialog
-};
+export { MuiHits, MuiSearchBox, MuiCheckboxRefinementList, MuiSearchDialog };
