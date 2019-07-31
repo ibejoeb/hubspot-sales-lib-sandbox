@@ -247,6 +247,7 @@ const MuiSearchDialog: React.FC<SearchDialogProps> = ({
       <DialogContent dividers={false}>
         <Grid container direction="row" spacing={1}>
           <Grid item sm={3}>
+            <MuiCheckboxRefinementList attribute="highlight_tool" />
             <MuiCheckboxRefinementList attribute="industry" />
             <MuiCheckboxRefinementList attribute="segment" />
             <MuiCheckboxRefinementList attribute="country" />
